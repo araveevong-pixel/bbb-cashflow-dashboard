@@ -10,1071 +10,331 @@
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg:          #f7f8fa;
-    --card:        #ffffff;
-    --card-soft:   #fafbfc;
-    --border:      #e5e7eb;
-    --border-soft: #f1f3f5;
-    --text:        #0f172a;
-    --text-sec:    #475569;
-    --text-mut:    #94a3b8;
-    --accent:      #f59e0b;
-    --green:       #10b981;
-    --green-bg:    #ecfdf5;
-    --red:         #ef4444;
-    --red-bg:      #fef2f2;
-    --blue:        #3b82f6;
-    --blue-bg:     #eff6ff;
-    --font:        'IBM Plex Sans Thai', sans-serif;
-    --mono:        'IBM Plex Mono', monospace;
-    --shadow-sm:   0 1px 2px rgba(15,23,42,0.04);
-    --shadow:      0 1px 3px rgba(15,23,42,0.05), 0 1px 2px rgba(15,23,42,0.03);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 0 0 80px;
-    -webkit-font-smoothing: antialiased;
-  }
-  header {
-    background: var(--card);
-    border-bottom: 1px solid var(--border);
-    padding: 18px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    gap: 12px;
-  }
-  .logo { display: flex; align-items: center; gap: 12px; }
-  .logo-mark {
-    width: 36px; height: 36px;
-    background: var(--text);
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--mono);
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--card);
-    letter-spacing: -0.5px;
-  }
-  .logo-text h1 { font-size: 15px; font-weight: 600; }
-  .logo-text p  { font-size: 12px; color: var(--text-sec); margin-top: 1px; }
-  .header-actions { display: flex; align-items: center; gap: 10px; }
-  .last-updated { font-size: 11px; color: var(--text-mut); font-family: var(--mono); }
-  .btn-refresh {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text-sec);
-    padding: 7px 14px;
-    border-radius: 8px;
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.15s;
-  }
-  .btn-refresh:hover { border-color: var(--text); color: var(--text); }
-  .btn-refresh svg { width: 14px; height: 14px; }
-  .container { max-width: 1140px; margin: 0 auto; padding: 28px 24px; }
-  #loading, #error-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 50vh;
-    gap: 16px;
-    color: var(--text-sec);
-    text-align: center;
-  }
-  #error-box { display: none; padding: 0 24px; }
-  #error-box h3 { color: var(--red); font-size: 16px; font-weight: 600; }
-  #error-box p  { font-size: 13px; max-width: 500px; line-height: 1.6; }
-  #error-box code { font-family: var(--mono); background: var(--card); padding: 2px 6px; border-radius: 4px; font-size: 12px; border: 1px solid var(--border); }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 3px solid var(--border);
-    border-top-color: var(--text);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .rotating { animation: spin 0.6s linear; }
-  #dashboard { display: none; }
-  .section-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-mut);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    padding-left: 4px;
-  }
+:root{--bg:#f7f8fa;--card:#fff;--card-soft:#fafbfc;--border:#e5e7eb;--border-soft:#f1f3f5;--text:#0f172a;--text-sec:#475569;--text-mut:#94a3b8;--accent:#f59e0b;--green:#10b981;--green-bg:#ecfdf5;--red:#ef4444;--red-bg:#fef2f2;--blue:#3b82f6;--blue-bg:#eff6ff;--font:'IBM Plex Sans Thai',sans-serif;--mono:'IBM Plex Mono',monospace;--shadow-sm:0 1px 2px rgba(15,23,42,.04);--shadow:0 1px 3px rgba(15,23,42,.05),0 1px 2px rgba(15,23,42,.03)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 80px;-webkit-font-smoothing:antialiased}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-mark{width:36px;height:36px;background:var(--text);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:600;font-size:13px;color:var(--card);letter-spacing:-.5px}
+.logo-text h1{font-size:15px;font-weight:600}
+.logo-text p{font-size:12px;color:var(--text-sec);margin-top:1px}
+.header-actions{display:flex;align-items:center;gap:10px}
+.last-updated{font-size:11px;color:var(--text-mut);font-family:var(--mono)}
+.btn-refresh{background:var(--card);border:1px solid var(--border);color:var(--text-sec);padding:7px 14px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.btn-refresh:hover{border-color:var(--text);color:var(--text)}
+.btn-refresh svg{width:14px;height:14px}
+.container{max-width:1140px;margin:0 auto;padding:28px 24px}
+#loading,#error-box{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:16px;color:var(--text-sec);text-align:center}
+#error-box{display:none;padding:0 24px}
+#error-box h3{color:var(--red);font-size:16px;font-weight:600}
+#error-box p{font-size:13px;max-width:500px;line-height:1.6}
+#error-box code{font-family:var(--mono);background:var(--card);padding:2px 6px;border-radius:4px;font-size:12px;border:1px solid var(--border)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rotating{animation:spin .6s linear}
+#dashboard{display:none}
+.section-title{font-size:12px;font-weight:600;color:var(--text-mut);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;padding-left:4px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:32px}
+@media(max-width:800px){.summary-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.summary-grid{grid-template-columns:1fr}}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow-sm);transition:all .2s}
+.summary-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.card-label{font-size:11px;font-weight:500;color:var(--text-sec);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.card-label-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.card-amount{font-family:var(--mono);font-size:24px;font-weight:600;line-height:1.1;margin-bottom:4px;letter-spacing:-.5px}
+.card-sub{font-size:11px;color:var(--text-mut)}
+.amt-green{color:var(--green)}.amt-red{color:var(--red)}.amt-dark{color:var(--text)}.amt-mut{color:var(--text-mut)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin-top:6px}
+.badge-surplus{background:var(--green-bg);color:var(--green)}
+.badge-deficit{background:var(--red-bg);color:var(--red)}
 
-  /* Summary */
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 32px;
-  }
-  @media(max-width:700px) { .summary-grid { grid-template-columns: 1fr; } }
-  .summary-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s;
-  }
-  .summary-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
-  .card-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-sec);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .card-label-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  .card-amount {
-    font-family: var(--mono);
-    font-size: 28px;
-    font-weight: 600;
-    line-height: 1.1;
-    margin-bottom: 6px;
-    letter-spacing: -0.5px;
-  }
-  .card-in  .card-amount { color: var(--green); }
-  .card-out .card-amount { color: var(--red); }
-  .card-bal .card-amount { color: var(--text); }
-  .card-sub { font-size: 12px; color: var(--text-mut); }
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 8px;
-  }
-  .badge-surplus { background: var(--green-bg); color: var(--green); }
-  .badge-deficit { background: var(--red-bg);   color: var(--red); }
+/* Monthly */
+.month-list{display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
+.month-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.month-header{padding:16px 22px;display:flex;justify-content:space-between;align-items:center;background:var(--card-soft);border-bottom:1px solid var(--border-soft);cursor:pointer;user-select:none;transition:background .15s;gap:12px}
+.month-header:hover{background:#f3f4f6}
+.month-name{font-size:15px;font-weight:600;display:flex;align-items:center;gap:10px}
+.month-name .chev{width:18px;height:18px;color:var(--text-mut);transition:transform .2s}
+.month-card.collapsed .month-name .chev{transform:rotate(-90deg)}
+.month-summary{display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:13px}
+.ms-item{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.ms-label{font-family:var(--font);font-size:10px;color:var(--text-mut);text-transform:uppercase;letter-spacing:.06em;font-weight:500}
+.ms-in{color:var(--green)}.ms-out{color:var(--red)}
+.ms-net.pos{color:var(--green);font-weight:600}.ms-net.neg{color:var(--red);font-weight:600}.ms-net.zero{color:var(--text-mut)}
+.month-body{padding:18px 22px 22px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.month-card.collapsed .month-body,.month-card.collapsed .running-bar{display:none}
+@media(max-width:700px){.month-body{grid-template-columns:1fr;gap:16px}.month-summary{gap:12px}}
+.mb-section h4{font-size:11px;font-weight:600;color:var(--text-mut);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.mb-section h4 .dot{width:6px;height:6px;border-radius:50%}
+.mb-in h4 .dot{background:var(--green)}.mb-out h4 .dot{background:var(--red)}
+.mb-list{display:flex;flex-direction:column;gap:6px}
+.mb-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--card-soft);border-radius:8px;border:1px solid var(--border-soft);font-size:13px;gap:8px}
+.mb-item-left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.mb-date{font-family:var(--mono);font-size:11px;color:var(--text-sec);background:var(--card);padding:2px 7px;border-radius:4px;border:1px solid var(--border);flex-shrink:0}
+.mb-desc{color:var(--text-sec);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mb-amount{font-family:var(--mono);font-weight:500;font-size:13px;flex-shrink:0}
+.mb-amount.in{color:var(--green)}.mb-amount.out{color:var(--red)}
+.mb-empty{color:var(--text-mut);font-size:12px;padding:9px 0}
+.mb-grouped{display:flex;flex-direction:column;gap:6px}
+.mb-group{background:var(--card-soft);border:1px solid var(--border-soft);border-radius:8px;overflow:hidden}
+.mb-group-head{padding:8px 12px;background:var(--card);display:flex;justify-content:space-between;align-items:center;font-size:12px;border-bottom:1px solid var(--border-soft);font-weight:500}
+.mb-group-date{font-family:var(--mono);font-size:11px;color:var(--text-sec)}
+.mb-group-total{font-family:var(--mono);color:var(--red);font-weight:600}
+.mb-group-body{padding:4px 0}
+.mb-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;font-size:12px;gap:8px}
+.mb-sub-cat{display:flex;align-items:center;gap:6px;min-width:0;flex:1}
+.cat-pill{font-size:10px;padding:1px 6px;border-radius:4px;flex-shrink:0;font-weight:500}
+.mb-sub-name{color:var(--text-sec);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.mb-sub-amount{font-family:var(--mono);color:var(--text-sec);flex-shrink:0;font-size:11px}
+.running-bar{background:var(--card-soft);border-top:1px solid var(--border-soft);padding:12px 22px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.rb-label{color:var(--text-sec)}.rb-amount{font-family:var(--mono);font-weight:600}.rb-amount.pos{color:var(--green)}.rb-amount.neg{color:var(--red)}
 
-  /* Monthly */
-  .month-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
-  .month-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
-  }
-  .month-header {
-    padding: 16px 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--card-soft);
-    border-bottom: 1px solid var(--border-soft);
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.15s;
-    gap: 12px;
-  }
-  .month-header:hover { background: #f3f4f6; }
-  .month-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .month-name .chev {
-    width: 18px; height: 18px;
-    color: var(--text-mut);
-    transition: transform 0.2s;
-  }
-  .month-card.collapsed .month-name .chev { transform: rotate(-90deg); }
-  .month-summary {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    font-family: var(--mono);
-    font-size: 13px;
-  }
-  .ms-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1px;
-  }
-  .ms-label {
-    font-family: var(--font);
-    font-size: 10px;
-    color: var(--text-mut);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-  }
-  .ms-in  { color: var(--green); }
-  .ms-out { color: var(--red); }
-  .ms-net.pos { color: var(--green); font-weight: 600; }
-  .ms-net.neg { color: var(--red);   font-weight: 600; }
-  .ms-net.zero { color: var(--text-mut); }
+/* Paid row dim */
+.mb-group.paid{opacity:.45}
+.mb-group.paid .mb-group-head{background:#f9fafb}
+.mb-group.paid .mb-group-total{color:var(--text-mut)}
 
-  .month-body {
-    padding: 18px 22px 22px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 22px;
-  }
-  .month-card.collapsed .month-body { display: none; }
-  .month-card.collapsed .running-bar { display: none; }
-  @media(max-width:700px) {
-    .month-body { grid-template-columns: 1fr; gap: 16px; }
-    .month-summary { gap: 12px; }
-  }
+/* Charts */
+.charts-row{display:grid;grid-template-columns:1fr 1.5fr;gap:14px;margin-bottom:32px}
+@media(max-width:700px){.charts-row{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;box-shadow:var(--shadow-sm)}
+.panel-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.panel-title::before{content:'';width:3px;height:14px;background:var(--text);border-radius:2px}
+.chart-wrap{position:relative;height:220px}
 
-  .mb-section h4 {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-mut);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .mb-section h4 .dot { width: 6px; height: 6px; border-radius: 50%; }
-  .mb-in h4  .dot { background: var(--green); }
-  .mb-out h4 .dot { background: var(--red); }
-  .mb-list { display: flex; flex-direction: column; gap: 6px; }
-  .mb-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 9px 12px;
-    background: var(--card-soft);
-    border-radius: 8px;
-    border: 1px solid var(--border-soft);
-    font-size: 13px;
-    gap: 8px;
-  }
-  .mb-item-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
-  .mb-date {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-sec);
-    background: var(--card);
-    padding: 2px 7px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-  .mb-desc {
-    color: var(--text-sec);
-    font-size: 12px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .mb-amount {
-    font-family: var(--mono);
-    font-weight: 500;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  .mb-amount.in  { color: var(--green); }
-  .mb-amount.out { color: var(--red); }
-  .mb-empty { color: var(--text-mut); font-size: 12px; padding: 9px 0; }
-  .mb-grouped { display: flex; flex-direction: column; gap: 6px; }
-  .mb-group {
-    background: var(--card-soft);
-    border: 1px solid var(--border-soft);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .mb-group-head {
-    padding: 8px 12px;
-    background: var(--card);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    border-bottom: 1px solid var(--border-soft);
-    font-weight: 500;
-  }
-  .mb-group-date {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-sec);
-  }
-  .mb-group-total {
-    font-family: var(--mono);
-    color: var(--red);
-    font-weight: 600;
-  }
-  .mb-group-body { padding: 4px 0; }
-  .mb-sub {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 5px 12px;
-    font-size: 12px;
-    gap: 8px;
-  }
-  .mb-sub-cat { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
-  .cat-pill {
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    flex-shrink: 0;
-    font-weight: 500;
-  }
-  .mb-sub-name {
-    color: var(--text-sec);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 12px;
-  }
-  .mb-sub-amount {
-    font-family: var(--mono);
-    color: var(--text-sec);
-    flex-shrink: 0;
-    font-size: 11px;
-  }
-  .running-bar {
-    background: var(--card-soft);
-    border-top: 1px solid var(--border-soft);
-    padding: 12px 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-  }
-  .rb-label { color: var(--text-sec); }
-  .rb-amount { font-family: var(--mono); font-weight: 600; }
-  .rb-amount.pos { color: var(--green); }
-  .rb-amount.neg { color: var(--red); }
+/* Cat bars */
+.cat-list{display:flex;flex-direction:column;gap:10px}
+.cat-row{display:flex;align-items:center;gap:10px;font-size:13px}
+.cat-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cat-name{flex:1}.cat-bar-wrap{flex:2;height:6px;background:var(--border-soft);border-radius:3px;overflow:hidden}
+.cat-bar{height:100%;border-radius:3px;transition:width .8s ease}
+.cat-amount{font-family:var(--mono);font-size:12px;color:var(--text-sec);min-width:90px;text-align:right}
 
-  /* Charts */
-  .charts-row {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 14px;
-    margin-bottom: 32px;
-  }
-  @media(max-width:700px) { .charts-row { grid-template-columns: 1fr; } }
-  .panel {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: var(--shadow-sm);
-  }
-  .panel-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .panel-title::before {
-    content: '';
-    width: 3px; height: 14px;
-    background: var(--text);
-    border-radius: 2px;
-  }
-  .chart-wrap { position: relative; height: 220px; }
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--text-mut);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border-soft);transition:background .15s}
+tbody tr:hover{background:var(--card-soft)}
+tbody tr.row-paid{opacity:.4}
+td{padding:11px 14px;vertical-align:middle}
+.td-amount{font-family:var(--mono);font-size:13px;text-align:right;white-space:nowrap}
+.td-date{white-space:nowrap;color:var(--text-sec);font-family:var(--mono);font-size:12px}
+.td-name{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-proj{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-sec);font-size:12px}
+.tag{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:500;white-space:nowrap}
+.tag-paid{background:#f1f5f9;color:var(--text-mut);text-decoration:line-through}
+.tag-date-warn{background:#fef3c7;color:#b45309}
+.tag-date-ok{background:var(--blue-bg);color:var(--blue)}
+.tag-date-past{background:var(--red-bg);color:var(--red)}
+.tag-date-none{background:#f1f5f9;color:var(--text-mut)}
 
-  /* Cat bars */
-  .cat-list { display: flex; flex-direction: column; gap: 10px; }
-  .cat-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-  .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .cat-name { flex: 1; color: var(--text); }
-  .cat-bar-wrap {
-    flex: 2;
-    height: 6px;
-    background: var(--border-soft);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .cat-bar { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
-  .cat-amount {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-sec);
-    min-width: 90px;
-    text-align: right;
-  }
-
-  /* Table */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th {
-    text-align: left;
-    padding: 10px 14px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-mut);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  tbody tr {
-    border-bottom: 1px solid var(--border-soft);
-    transition: background 0.15s;
-  }
-  tbody tr:hover { background: var(--card-soft); }
-  td { padding: 11px 14px; vertical-align: middle; }
-  .td-amount {
-    font-family: var(--mono);
-    font-size: 13px;
-    text-align: right;
-    white-space: nowrap;
-  }
-  .td-date  { white-space: nowrap; color: var(--text-sec); font-family: var(--mono); font-size: 12px; }
-  .td-name  { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .td-proj  { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-sec); font-size: 12px; }
-  .tag {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .tag-date-warn { background: #fef3c7; color: #b45309; }
-  .tag-date-ok   { background: var(--blue-bg); color: var(--blue); }
-  .tag-date-past { background: var(--red-bg);  color: var(--red); }
-  .tag-date-none { background: #f1f5f9; color: var(--text-mut); }
-
-  /* Filter */
-  .filter-bar {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-  }
-  .filter-btn {
-    padding: 6px 13px;
-    border-radius: 18px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--text-sec);
-    font-family: var(--font);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .filter-btn:hover { border-color: var(--text); color: var(--text); }
-  .filter-btn.active {
-    background: var(--text);
-    border-color: var(--text);
-    color: var(--card);
-    font-weight: 500;
-  }
+/* Filter */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-btn{padding:6px 13px;border-radius:18px;border:1px solid var(--border);background:var(--card);color:var(--text-sec);font-family:var(--font);font-size:12px;cursor:pointer;transition:all .15s}
+.filter-btn:hover{border-color:var(--text);color:var(--text)}
+.filter-btn.active{background:var(--text);border-color:var(--text);color:var(--card);font-weight:500}
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">
     <div class="logo-mark">BBB</div>
-    <div class="logo-text">
-      <h1>Cash Flow Dashboard</h1>
-      <p>รายรับ-รายจ่าย รอดำเนินการ</p>
-    </div>
+    <div class="logo-text"><h1>Cash Flow Dashboard</h1><p>รายรับ-รายจ่าย BuddyBBB</p></div>
   </div>
   <div class="header-actions">
     <span class="last-updated" id="ts">—</span>
     <button class="btn-refresh" id="btn-refresh">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>
       รีเฟรช
     </button>
   </div>
 </header>
-
 <div class="container">
-
-  <div id="loading">
-    <div class="spinner"></div>
-    <span>กำลังโหลดข้อมูล…</span>
-  </div>
-
-  <div id="error-box">
-    <h3>โหลดข้อมูลไม่ได้</h3>
-    <p id="error-msg"></p>
-    <p style="font-size:12px;color:var(--text-mut)">
-      ตรวจสอบว่า Google Sheet ตั้งค่าเป็น <code>Anyone with the link</code> หรือยัง
-    </p>
-  </div>
-
+  <div id="loading"><div class="spinner"></div><span>กำลังโหลดข้อมูล…</span></div>
+  <div id="error-box"><h3>โหลดข้อมูลไม่ได้</h3><p id="error-msg"></p><p style="font-size:12px;color:var(--text-mut)">ตรวจสอบว่า Google Sheet ตั้งค่าเป็น <code>Anyone with the link</code> หรือยัง</p></div>
   <div id="dashboard">
-
     <div class="summary-grid">
-      <div class="summary-card card-in">
-        <div class="card-label"><span class="card-label-dot" style="background:var(--green)"></span>เงินรอเข้า</div>
-        <div class="card-amount" id="total-in">—</div>
-        <div class="card-sub" id="income-count">0 รายการ</div>
-      </div>
-      <div class="summary-card card-out">
-        <div class="card-label"><span class="card-label-dot" style="background:var(--red)"></span>รายจ่ายรอดำเนินการ</div>
-        <div class="card-amount" id="total-out">—</div>
-        <div class="card-sub" id="expense-count">0 รายการ</div>
-      </div>
-      <div class="summary-card card-bal">
-        <div class="card-label"><span class="card-label-dot" style="background:var(--accent)"></span>ยอดสุทธิคงเหลือ</div>
-        <div class="card-amount" id="balance">—</div>
-        <div id="balance-badge"></div>
-      </div>
+      <div class="summary-card"><div class="card-label"><span class="card-label-dot" style="background:var(--green)"></span>เงินรอเข้า</div><div class="card-amount amt-green" id="total-in">—</div><div class="card-sub" id="income-count">—</div></div>
+      <div class="summary-card"><div class="card-label"><span class="card-label-dot" style="background:var(--red)"></span>รอจ่าย</div><div class="card-amount amt-red" id="total-pending">—</div><div class="card-sub" id="pending-count">—</div></div>
+      <div class="summary-card"><div class="card-label"><span class="card-label-dot" style="background:var(--text-mut)"></span>จ่ายแล้ว</div><div class="card-amount amt-mut" id="total-paid">—</div><div class="card-sub" id="paid-count">—</div></div>
+      <div class="summary-card"><div class="card-label"><span class="card-label-dot" style="background:var(--accent)"></span>คงเหลือหลังจ่ายครบ</div><div class="card-amount amt-dark" id="balance">—</div><div id="balance-badge"></div></div>
     </div>
-
     <div class="section-title">เงินเข้า-ออก แยกตามเดือน</div>
     <div class="month-list" id="month-list"></div>
-
     <div class="charts-row">
-      <div class="panel">
-        <div class="panel-title">แยกตามหมวด</div>
-        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">Cash Flow ตามวันที่จ่าย</div>
-        <div class="chart-wrap"><canvas id="timelineChart"></canvas></div>
-      </div>
+      <div class="panel"><div class="panel-title">รายจ่ายรอดำเนินการ แยกหมวด</div><div class="chart-wrap"><canvas id="donutChart"></canvas></div></div>
+      <div class="panel"><div class="panel-title">Cash Flow ตามวันที่จ่าย (รอจ่าย)</div><div class="chart-wrap"><canvas id="timelineChart"></canvas></div></div>
     </div>
-
-    <div class="panel" style="margin-bottom:32px">
-      <div class="panel-title">สัดส่วนรายจ่ายแต่ละหมวด</div>
-      <div class="cat-list" id="cat-list"></div>
+    <div class="panel" style="margin-bottom:32px"><div class="panel-title">สัดส่วนรายจ่ายรอดำเนินการ</div><div class="cat-list" id="cat-list"></div></div>
+    <div class="panel"><div class="panel-title">รายการทั้งหมด</div>
+      <div class="filter-bar" id="filter-bar"></div>
+      <div class="table-wrap"><table><thead><tr><th>สถานะ</th><th>หมวด</th><th>ชื่อ</th><th>โครงการ</th><th>วันที่จ่าย</th><th style="text-align:right">ยอด (฿)</th></tr></thead><tbody id="expense-table"></tbody></table></div>
     </div>
-
-    <div class="panel">
-      <div class="panel-title">รายการรอจ่ายทั้งหมด</div>
-      <div class="filter-bar" id="filter-bar">
-        <button class="filter-btn active" data-cat="ทั้งหมด">ทั้งหมด</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>หมวด</th>
-              <th>ชื่อ</th>
-              <th>โครงการ</th>
-              <th>วันที่จ่าย</th>
-              <th style="text-align:right">ยอด (฿)</th>
-            </tr>
-          </thead>
-          <tbody id="expense-table"></tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 </div>
-
 <script>
-const SHEET_ID = '1Ng86ozTSeahZMS4CLROYjChYrkShJCNTqzKPUrEf15s';
-const GID      = '0';
-const CSV_URL  = () => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&t=${Date.now()}`;
+const SHEET_ID='1Ng86ozTSeahZMS4CLROYjChYrkShJCNTqzKPUrEf15s';
+const GID='0';
+const CSV_URL=()=>`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&t=${Date.now()}`;
+const CAT_COLORS={'KOLs':'#f59e0b','Freelance':'#3b82f6','เงินเดือน':'#10b981','บัญชี':'#8b5cf6','คืนค่า ADS':'#f97316','ค่าใช้จ่ายบัดดี้':'#ef4444'};
+const CAT_COLS=[{cat:'KOLs',cols:[2,3,4,5]},{cat:'Freelance',cols:[6,7,8,9]},{cat:'เงินเดือน',cols:[10,11,12,13]},{cat:'บัญชี',cols:[14,15,16,17]},{cat:'คืนค่า ADS',cols:[18,19,20,21]},{cat:'ค่าใช้จ่ายบัดดี้',cols:[22,23,24,25]}];
+const THAI_MONTHS=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+let allExpenses=[];let charts={};
+const fmt=n=>n.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtS=n=>n.toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0});
+function parseNumber(v){if(v==null||v==='')return null;const n=parseFloat(String(v).replace(/,/g,'').trim());return isNaN(n)?null:n;}
+function parseDate(v){if(!v)return null;const s=String(v).trim();let m=s.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);if(m){let[_,d,mo,y]=m;if(y.length===2)y='20'+y;const dt=new Date(`${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`);return isNaN(dt)?null:dt;}m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m){const dt=new Date(s);return isNaN(dt)?null:dt;}return null;}
+function dateToStr(d){if(!d)return'ยังไม่กำหนด';return`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(-2)}`;}
+function dateShort(d){return d?`${d.getDate()}/${d.getMonth()+1}`:'—';}
+function monthKey(d){return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`:'unscheduled';}
+function monthLabel(k){if(k==='unscheduled')return'ยังไม่กำหนดวัน';const[y,m]=k.split('-');return`${THAI_MONTHS[parseInt(m)-1]} ${parseInt(y)+543}`;}
+function isPaid(d){if(!d)return false;const today=new Date();today.setHours(0,0,0,0);return d<today;}
+function dateStatus(d){if(!d)return'none';if(isPaid(d))return'paid';const diff=(d-new Date())/864e5;if(diff<=7)return'warn';return'ok';}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
-const CAT_COLORS = {
-  'KOLs':              '#f59e0b',
-  'Freelance':         '#3b82f6',
-  'เงินเดือน':         '#10b981',
-  'บัญชี':             '#8b5cf6',
-  'คืนค่า ADS':        '#f97316',
-  'ค่าใช้จ่ายบัดดี้':   '#ef4444',
-};
-
-const CAT_COLS = [
-  { cat: 'KOLs',              cols: [2, 3, 4, 5]   },
-  { cat: 'Freelance',         cols: [6, 7, 8, 9]   },
-  { cat: 'เงินเดือน',         cols: [10,11,12,13]  },
-  { cat: 'บัญชี',             cols: [14,15,16,17]  },
-  { cat: 'คืนค่า ADS',        cols: [18,19,20,21]  },
-  { cat: 'ค่าใช้จ่ายบัดดี้',   cols: [22,23,24,25]  },
-];
-
-const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
-                     'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-
-let allExpenses = [];
-let charts = {};
-
-const fmt = (n) => n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtShort = (n) => n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-
-function parseNumber(v) {
-  if (v === null || v === undefined || v === '') return null;
-  const cleaned = String(v).replace(/,/g, '').trim();
-  const num = parseFloat(cleaned);
-  return isNaN(num) ? null : num;
-}
-
-function parseDate(v) {
-  if (!v) return null;
-  const s = String(v).trim();
-  if (!s) return null;
-  let m = s.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-  if (m) {
-    let [_, d, mo, y] = m;
-    if (y.length === 2) y = '20' + y;
-    const dt = new Date(`${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`);
-    return isNaN(dt) ? null : dt;
-  }
-  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if (m) {
-    const dt = new Date(s);
-    return isNaN(dt) ? null : dt;
-  }
-  return null;
-}
-
-function dateToStr(d) {
-  if (!d) return 'ยังไม่กำหนด';
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const yy = String(d.getFullYear()).slice(-2);
-  return `${dd}/${mm}/${yy}`;
-}
-
-function dateShort(d) {
-  if (!d) return '—';
-  return `${d.getDate()}/${d.getMonth()+1}`;
-}
-
-function monthKey(d) {
-  if (!d) return 'unscheduled';
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-}
-
-function monthLabel(key) {
-  if (key === 'unscheduled') return 'ยังไม่กำหนดวัน';
-  const [y, m] = key.split('-');
-  return `${THAI_MONTHS[parseInt(m)-1]} ${parseInt(y)+543}`;
-}
-
-function dateStatus(d) {
-  if (!d) return 'none';
-  const diff = (d - new Date()) / 86400000;
-  if (diff < 0)  return 'past';
-  if (diff <= 7) return 'warn';
-  return 'ok';
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-function processData(rows) {
-  const income = [];
-  const expenses = [];
-
-  for (let i = 1; i < rows.length; i++) {
-    const row = rows[i];
-    if (!row) continue;
-
-    const inLabel = (row[0] || '').toString().trim();
-    const inAmt   = parseNumber(row[1]);
-    if (inLabel && inAmt !== null && inAmt > 0) {
-      const inDate = parseDate(inLabel);
-      income.push({
-        label: inLabel,
-        amount: inAmt,
-        dateObj: inDate,
-        date: dateToStr(inDate),
-      });
-    }
-
-    CAT_COLS.forEach(({ cat, cols }) => {
-      const [ni, wi, ai, di] = cols;
-      const amt = parseNumber(row[ai]);
-      if (amt !== null && amt > 0) {
-        const d = parseDate(row[di]);
-        expenses.push({
-          cat,
-          name:    (row[ni] || '-').toString().trim() || '-',
-          project: (row[wi] || '-').toString().trim() || '-',
-          amount:  amt,
-          dateObj: d,
-          date:    dateToStr(d),
-        });
-      }
+function processData(rows){
+  const income=[],expenses=[];
+  for(let i=1;i<rows.length;i++){
+    const row=rows[i];if(!row)continue;
+    const inL=(row[0]||'').toString().trim(),inA=parseNumber(row[1]);
+    if(inL&&inA!==null&&inA>0){const d=parseDate(inL);income.push({label:inL,amount:inA,dateObj:d,date:dateToStr(d)});}
+    CAT_COLS.forEach(({cat,cols})=>{
+      const[ni,wi,ai,di]=cols;const amt=parseNumber(row[ai]);
+      if(amt!==null&&amt>0){const d=parseDate(row[di]);expenses.push({cat,name:(row[ni]||'-').toString().trim()||'-',project:(row[wi]||'-').toString().trim()||'-',amount:amt,dateObj:d,date:dateToStr(d),paid:isPaid(d)});}
     });
   }
-
-  return { income, expenses };
+  return{income,expenses};
 }
 
-function renderMonthly(income, expenses) {
-  const months = {};
-  income.forEach(i => {
-    const key = monthKey(i.dateObj);
-    if (!months[key]) months[key] = { income: [], expenses: [] };
-    months[key].income.push(i);
-  });
-  expenses.forEach(e => {
-    const key = monthKey(e.dateObj);
-    if (!months[key]) months[key] = { income: [], expenses: [] };
-    months[key].expenses.push(e);
-  });
-
-  const sortedKeys = Object.keys(months).sort((a, b) => {
-    if (a === 'unscheduled') return 1;
-    if (b === 'unscheduled') return -1;
-    return a.localeCompare(b);
-  });
-
-  let runningBalance = 0;
-  const balances = {};
-  sortedKeys.filter(k => k !== 'unscheduled').forEach(k => {
-    const totalIn  = months[k].income.reduce((s, i) => s + i.amount, 0);
-    const totalOut = months[k].expenses.reduce((s, e) => s + e.amount, 0);
-    runningBalance += totalIn - totalOut;
-    balances[k] = runningBalance;
-  });
-
-  const container = document.getElementById('month-list');
-  container.innerHTML = '';
-
-  sortedKeys.forEach(key => {
-    const m = months[key];
-    const totalIn  = m.income.reduce((s, i) => s + i.amount, 0);
-    const totalOut = m.expenses.reduce((s, e) => s + e.amount, 0);
-    const net      = totalIn - totalOut;
-    const netCls   = net > 0 ? 'pos' : net < 0 ? 'neg' : 'zero';
-    const netSign  = net > 0 ? '+' : net < 0 ? '−' : '';
-
-    const expByDate = {};
-    m.expenses.forEach(e => {
-      const dk = e.date;
-      if (!expByDate[dk]) expByDate[dk] = { dateObj: e.dateObj, items: [], total: 0 };
-      expByDate[dk].items.push(e);
-      expByDate[dk].total += e.amount;
-    });
-    const sortedDates = Object.entries(expByDate).sort(([,a],[,b]) => {
-      const ta = a.dateObj ? a.dateObj.getTime() : Infinity;
-      const tb = b.dateObj ? b.dateObj.getTime() : Infinity;
-      return ta - tb;
-    });
-
-    const sortedIncome = [...m.income].sort((a, b) => {
-      const ta = a.dateObj ? a.dateObj.getTime() : Infinity;
-      const tb = b.dateObj ? b.dateObj.getTime() : Infinity;
-      return ta - tb;
-    });
-
-    const card = document.createElement('div');
-    card.className = 'month-card';
-
-    let incomeHtml = sortedIncome.length === 0
-      ? '<div class="mb-empty">ไม่มีเงินเข้าเดือนนี้</div>'
-      : `<div class="mb-list">${sortedIncome.map(i => `
-          <div class="mb-item">
-            <div class="mb-item-left">
-              <span class="mb-date">${dateShort(i.dateObj)}</span>
-              <span class="mb-desc">${escapeHtml(i.label)}</span>
-            </div>
-            <span class="mb-amount in">+${fmtShort(i.amount)}</span>
-          </div>`).join('')}</div>`;
-
-    let expenseHtml = sortedDates.length === 0
-      ? '<div class="mb-empty">ไม่มีรายจ่ายเดือนนี้</div>'
-      : `<div class="mb-grouped">${sortedDates.map(([dk, group]) => `
-          <div class="mb-group">
-            <div class="mb-group-head">
-              <span class="mb-group-date">${dk}</span>
-              <span class="mb-group-total">−${fmtShort(group.total)}</span>
-            </div>
-            <div class="mb-group-body">
-              ${group.items.map(e => `
-                <div class="mb-sub">
-                  <div class="mb-sub-cat">
-                    <span class="cat-pill" style="background:${CAT_COLORS[e.cat]}22;color:${CAT_COLORS[e.cat]}">${e.cat}</span>
-                    <span class="mb-sub-name" title="${escapeHtml(e.name)}">${escapeHtml(e.name)}</span>
-                  </div>
-                  <span class="mb-sub-amount">${fmtShort(e.amount)}</span>
-                </div>`).join('')}
-            </div>
-          </div>`).join('')}</div>`;
-
-    const runningHtml = key !== 'unscheduled'
-      ? `<div class="running-bar">
-           <span class="rb-label">ยอดสะสมหลังจบเดือน</span>
-           <span class="rb-amount ${balances[key] >= 0 ? 'pos' : 'neg'}">฿${fmt(balances[key])}</span>
-         </div>`
-      : '';
-
-    card.innerHTML = `
-      <div class="month-header">
-        <div class="month-name">
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-          ${monthLabel(key)}
-        </div>
-        <div class="month-summary">
-          <div class="ms-item">
-            <span class="ms-label">เข้า</span>
-            <span class="ms-in">+${fmtShort(totalIn)}</span>
-          </div>
-          <div class="ms-item">
-            <span class="ms-label">ออก</span>
-            <span class="ms-out">−${fmtShort(totalOut)}</span>
-          </div>
-          <div class="ms-item">
-            <span class="ms-label">สุทธิ</span>
-            <span class="ms-net ${netCls}">${netSign}${fmtShort(Math.abs(net))}</span>
-          </div>
-        </div>
-      </div>
-      <div class="month-body">
-        <div class="mb-section mb-in">
-          <h4><span class="dot"></span>เงินเข้า</h4>
-          ${incomeHtml}
-        </div>
-        <div class="mb-section mb-out">
-          <h4><span class="dot"></span>รายจ่าย</h4>
-          ${expenseHtml}
-        </div>
-      </div>
-      ${runningHtml}`;
-
-    card.querySelector('.month-header').addEventListener('click', () => {
-      card.classList.toggle('collapsed');
-    });
-
-    container.appendChild(card);
+function renderMonthly(income,expenses){
+  const months={};
+  income.forEach(i=>{const k=monthKey(i.dateObj);if(!months[k])months[k]={income:[],expenses:[]};months[k].income.push(i);});
+  expenses.forEach(e=>{const k=monthKey(e.dateObj);if(!months[k])months[k]={income:[],expenses:[]};months[k].expenses.push(e);});
+  const keys=Object.keys(months).sort((a,b)=>{if(a==='unscheduled')return 1;if(b==='unscheduled')return -1;return a.localeCompare(b);});
+  let rb=0;const bals={};
+  keys.filter(k=>k!=='unscheduled').forEach(k=>{rb+=months[k].income.reduce((s,i)=>s+i.amount,0)-months[k].expenses.reduce((s,e)=>s+e.amount,0);bals[k]=rb;});
+  const ct=document.getElementById('month-list');ct.innerHTML='';
+  keys.forEach(key=>{
+    const m=months[key];
+    const tIn=m.income.reduce((s,i)=>s+i.amount,0);
+    const tOut=m.expenses.reduce((s,e)=>s+e.amount,0);
+    const tPending=m.expenses.filter(e=>!e.paid).reduce((s,e)=>s+e.amount,0);
+    const tPaid=m.expenses.filter(e=>e.paid).reduce((s,e)=>s+e.amount,0);
+    const net=tIn-tOut;const nc=net>0?'pos':net<0?'neg':'zero';const ns=net>0?'+':net<0?'−':'';
+    const expByDate={};
+    m.expenses.forEach(e=>{const dk=e.date;if(!expByDate[dk])expByDate[dk]={dateObj:e.dateObj,items:[],total:0,paid:e.paid};expByDate[dk].items.push(e);expByDate[dk].total+=e.amount;});
+    const sortedDates=Object.entries(expByDate).sort(([,a],[,b])=>{const ta=a.dateObj?a.dateObj.getTime():Infinity;const tb=b.dateObj?b.dateObj.getTime():Infinity;return ta-tb;});
+    const sortedIncome=[...m.income].sort((a,b)=>(a.dateObj||Infinity)-(b.dateObj||Infinity));
+    const card=document.createElement('div');card.className='month-card';
+    let iHtml=sortedIncome.length===0?'<div class="mb-empty">ไม่มีเงินเข้าเดือนนี้</div>':`<div class="mb-list">${sortedIncome.map(i=>`<div class="mb-item"><div class="mb-item-left"><span class="mb-date">${dateShort(i.dateObj)}</span><span class="mb-desc">${esc(i.label)}</span></div><span class="mb-amount in">+${fmtS(i.amount)}</span></div>`).join('')}</div>`;
+    let eHtml=sortedDates.length===0?'<div class="mb-empty">ไม่มีรายจ่ายเดือนนี้</div>':`<div class="mb-grouped">${sortedDates.map(([dk,g])=>{
+      const paidCls=g.paid?'paid':'';
+      return`<div class="mb-group ${paidCls}"><div class="mb-group-head"><span class="mb-group-date">${dk}${g.paid?' (จ่ายแล้ว)':''}</span><span class="mb-group-total">−${fmtS(g.total)}</span></div><div class="mb-group-body">${g.items.map(e=>`<div class="mb-sub"><div class="mb-sub-cat"><span class="cat-pill" style="background:${CAT_COLORS[e.cat]}22;color:${CAT_COLORS[e.cat]}">${e.cat}</span><span class="mb-sub-name" title="${esc(e.name)}">${esc(e.name)}</span></div><span class="mb-sub-amount">${fmtS(e.amount)}</span></div>`).join('')}</div></div>`;
+    }).join('')}</div>`;
+    const rHtml=key!=='unscheduled'?`<div class="running-bar"><span class="rb-label">ยอดสะสมหลังจบเดือน</span><span class="rb-amount ${bals[key]>=0?'pos':'neg'}">฿${fmt(bals[key])}</span></div>`:'';
+    card.innerHTML=`<div class="month-header"><div class="month-name"><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>${monthLabel(key)}</div><div class="month-summary"><div class="ms-item"><span class="ms-label">เข้า</span><span class="ms-in">+${fmtS(tIn)}</span></div><div class="ms-item"><span class="ms-label">จ่ายแล้ว</span><span style="color:var(--text-mut)">−${fmtS(tPaid)}</span></div><div class="ms-item"><span class="ms-label">รอจ่าย</span><span class="ms-out">−${fmtS(tPending)}</span></div><div class="ms-item"><span class="ms-label">สุทธิ</span><span class="ms-net ${nc}">${ns}${fmtS(Math.abs(net))}</span></div></div></div><div class="month-body"><div class="mb-section mb-in"><h4><span class="dot"></span>เงินเข้า</h4>${iHtml}</div><div class="mb-section mb-out"><h4><span class="dot"></span>รายจ่าย</h4>${eHtml}</div></div>${rHtml}`;
+    card.querySelector('.month-header').addEventListener('click',()=>card.classList.toggle('collapsed'));
+    ct.appendChild(card);
   });
 }
 
-function renderTable(expenses) {
-  const sorted = [...expenses].sort((a, b) => {
-    const ta = a.dateObj ? a.dateObj.getTime() : Infinity;
-    const tb = b.dateObj ? b.dateObj.getTime() : Infinity;
-    return ta - tb;
-  });
-  const tbody = document.getElementById('expense-table');
-  tbody.innerHTML = '';
-  if (sorted.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-mut);padding:24px">ไม่มีรายการ</td></tr>`;
-    return;
-  }
-  sorted.forEach(e => {
-    const status = dateStatus(e.dateObj);
-    const tagClass =
-      status === 'past' ? 'tag-date-past' :
-      status === 'warn' ? 'tag-date-warn' :
-      status === 'ok'   ? 'tag-date-ok'   : 'tag-date-none';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><span class="tag" style="background:${CAT_COLORS[e.cat]}22;color:${CAT_COLORS[e.cat]}">${e.cat}</span></td>
-      <td class="td-name" title="${escapeHtml(e.name)}">${escapeHtml(e.name)}</td>
-      <td class="td-proj" title="${escapeHtml(e.project)}">${escapeHtml(e.project)}</td>
-      <td class="td-date"><span class="tag ${tagClass}">${e.date}</span></td>
-      <td class="td-amount">${fmt(e.amount)}</td>`;
+function renderTable(expenses){
+  const sorted=[...expenses].sort((a,b)=>{if(a.paid!==b.paid)return a.paid?1:-1;return(a.dateObj||Infinity)-(b.dateObj||Infinity);});
+  const tbody=document.getElementById('expense-table');tbody.innerHTML='';
+  if(sorted.length===0){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--text-mut);padding:24px">ไม่มีรายการ</td></tr>`;return;}
+  sorted.forEach(e=>{
+    const st=dateStatus(e.dateObj);
+    let tagCls,statusTag;
+    if(e.paid){tagCls='tag-paid';statusTag='จ่ายแล้ว';}
+    else if(st==='warn'){tagCls='tag-date-warn';statusTag='ใกล้ครบกำหนด';}
+    else if(st==='ok'){tagCls='tag-date-ok';statusTag='รอจ่าย';}
+    else{tagCls='tag-date-none';statusTag='ยังไม่กำหนด';}
+    const tr=document.createElement('tr');
+    if(e.paid)tr.className='row-paid';
+    tr.innerHTML=`<td><span class="tag ${tagCls}">${statusTag}</span></td><td><span class="tag" style="background:${CAT_COLORS[e.cat]}22;color:${CAT_COLORS[e.cat]}">${e.cat}</span></td><td class="td-name" title="${esc(e.name)}">${esc(e.name)}</td><td class="td-proj" title="${esc(e.project)}">${esc(e.project)}</td><td class="td-date">${e.date}</td><td class="td-amount">${fmt(e.amount)}</td>`;
     tbody.appendChild(tr);
   });
 }
 
-function renderCatBars(catTotals, totalOut) {
-  const container = document.getElementById('cat-list');
-  container.innerHTML = '';
-  const entries = Object.entries(catTotals).filter(([,v]) => v > 0).sort(([,a],[,b]) => b - a);
-  if (entries.length === 0) {
-    container.innerHTML = `<div style="color:var(--text-mut);text-align:center;padding:16px">ไม่มีข้อมูล</div>`;
-    return;
-  }
-  entries.forEach(([cat, amt]) => {
-    const pct = totalOut > 0 ? (amt / totalOut * 100) : 0;
-    container.innerHTML += `
-      <div class="cat-row">
-        <div class="cat-dot" style="background:${CAT_COLORS[cat] || '#888'}"></div>
-        <span class="cat-name">${cat}</span>
-        <div class="cat-bar-wrap">
-          <div class="cat-bar" style="width:${pct.toFixed(1)}%;background:${CAT_COLORS[cat] || '#888'}"></div>
-        </div>
-        <span class="cat-amount">${fmt(amt)}</span>
-      </div>`;
-  });
+function renderCatBars(catTotals,totalOut){
+  const ct=document.getElementById('cat-list');ct.innerHTML='';
+  const entries=Object.entries(catTotals).filter(([,v])=>v>0).sort(([,a],[,b])=>b-a);
+  if(!entries.length){ct.innerHTML=`<div style="color:var(--text-mut);text-align:center;padding:16px">ไม่มีข้อมูล</div>`;return;}
+  entries.forEach(([cat,amt])=>{const pct=totalOut>0?(amt/totalOut*100):0;ct.innerHTML+=`<div class="cat-row"><div class="cat-dot" style="background:${CAT_COLORS[cat]||'#888'}"></div><span class="cat-name">${cat}</span><div class="cat-bar-wrap"><div class="cat-bar" style="width:${pct.toFixed(1)}%;background:${CAT_COLORS[cat]||'#888'}"></div></div><span class="cat-amount">${fmt(amt)}</span></div>`;});
 }
 
-function buildCharts(catTotals, byDate) {
-  Object.values(charts).forEach(c => c && c.destroy());
-
-  const catEntries = Object.entries(catTotals).filter(([,v]) => v > 0);
-  const labels = catEntries.map(([k]) => k);
-  const values = catEntries.map(([,v]) => v);
-  const colors = labels.map(l => CAT_COLORS[l] || '#888');
-
-  charts.donut = new Chart(document.getElementById('donutChart'), {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
-    },
-    options: {
-      cutout: '68%',
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ฿${fmt(ctx.raw)}` } }
-      }
-    }
-  });
-
-  const dateEntries = Object.entries(byDate)
-    .filter(([d]) => d !== 'ยังไม่กำหนด')
-    .sort(([a],[b]) => {
-      const pa = a.split('/'), pb = b.split('/');
-      return new Date(`20${pa[2]}-${pa[1]}-${pa[0]}`) - new Date(`20${pb[2]}-${pb[1]}-${pb[0]}`);
-    });
-
-  charts.timeline = new Chart(document.getElementById('timelineChart'), {
-    type: 'bar',
-    data: {
-      labels: dateEntries.map(([d]) => d),
-      datasets: [{
-        data: dateEntries.map(([,v]) => v),
-        backgroundColor: '#0f172a',
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ` ฿${fmt(ctx.raw)}` } }
-      },
-      scales: {
-        x: { ticks: { color: '#64748b', font: { size: 11 } }, grid: { display: false } },
-        y: {
-          ticks: {
-            color: '#94a3b8',
-            font: { size: 10 },
-            callback: v => '฿' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v)
-          },
-          grid: { color: '#f1f3f5' },
-          border: { display: false }
-        }
-      }
-    }
-  });
+function buildCharts(catTotals,byDate){
+  Object.values(charts).forEach(c=>c&&c.destroy());
+  const ce=Object.entries(catTotals).filter(([,v])=>v>0);
+  charts.donut=new Chart(document.getElementById('donutChart'),{type:'doughnut',data:{labels:ce.map(([k])=>k),datasets:[{data:ce.map(([,v])=>v),backgroundColor:ce.map(([l])=>CAT_COLORS[l]||'#888'),borderWidth:2,borderColor:'#fff',hoverOffset:6}]},options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ฿${fmt(ctx.raw)}`}}}}});
+  const de=Object.entries(byDate).sort(([a],[b])=>{const pa=a.split('/'),pb=b.split('/');return new Date(`20${pa[2]}-${pa[1]}-${pa[0]}`)-new Date(`20${pb[2]}-${pb[1]}-${pb[0]}`);});
+  charts.timeline=new Chart(document.getElementById('timelineChart'),{type:'bar',data:{labels:de.map(([d])=>d),datasets:[{data:de.map(([,v])=>v),backgroundColor:'#0f172a',borderRadius:6,borderSkipped:false}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ฿${fmt(ctx.raw)}`}}},scales:{x:{ticks:{color:'#64748b',font:{size:11}},grid:{display:false}},y:{ticks:{color:'#94a3b8',font:{size:10},callback:v=>'฿'+(v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v)},grid:{color:'#f1f3f5'},border:{display:false}}}}});
 }
 
-function buildFilters(expenses) {
-  const cats = ['ทั้งหมด', ...Object.keys(CAT_COLORS)];
-  const bar = document.getElementById('filter-bar');
-  bar.innerHTML = '';
-  cats.forEach(cat => {
-    const count = cat === 'ทั้งหมด' ? expenses.length : expenses.filter(e => e.cat === cat).length;
-    if (cat !== 'ทั้งหมด' && count === 0) return;
-    const btn = document.createElement('button');
-    btn.className = 'filter-btn' + (cat === 'ทั้งหมด' ? ' active' : '');
-    btn.textContent = `${cat} (${count})`;
-    btn.addEventListener('click', () => {
-      bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderTable(cat === 'ทั้งหมด' ? allExpenses : allExpenses.filter(e => e.cat === cat));
-    });
+function buildFilters(expenses){
+  const bar=document.getElementById('filter-bar');bar.innerHTML='';
+  const statusFilters=[{label:'ทั้งหมด',fn:()=>true},{label:'รอจ่าย',fn:e=>!e.paid},{label:'จ่ายแล้ว',fn:e=>e.paid}];
+  const catFilters=Object.keys(CAT_COLORS).filter(c=>expenses.some(e=>e.cat===c));
+  const allFilters=[...statusFilters,...catFilters.map(c=>({label:c,fn:e=>e.cat===c}))];
+  allFilters.forEach((f,i)=>{
+    const count=expenses.filter(f.fn).length;if(count===0&&i>0)return;
+    const btn=document.createElement('button');btn.className='filter-btn'+(i===0?' active':'');
+    btn.textContent=`${f.label} (${count})`;
+    btn.addEventListener('click',()=>{bar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTable(expenses.filter(f.fn));});
     bar.appendChild(btn);
   });
 }
 
-function render(data) {
-  const { income, expenses } = data;
-  allExpenses = expenses;
+function render(data){
+  const{income,expenses}=data;allExpenses=expenses;
+  const tIn=income.reduce((s,i)=>s+i.amount,0);
+  const tAll=expenses.reduce((s,e)=>s+e.amount,0);
+  const pending=expenses.filter(e=>!e.paid);
+  const paid=expenses.filter(e=>e.paid);
+  const tPending=pending.reduce((s,e)=>s+e.amount,0);
+  const tPaid=paid.reduce((s,e)=>s+e.amount,0);
+  const balance=tIn-tAll;
 
-  const totalIn  = income.reduce((s, i) => s + i.amount, 0);
-  const totalOut = expenses.reduce((s, e) => s + e.amount, 0);
-  const balance  = totalIn - totalOut;
+  document.getElementById('total-in').textContent='฿'+fmt(tIn);
+  document.getElementById('income-count').textContent=income.length+' รายการ';
+  document.getElementById('total-pending').textContent='฿'+fmt(tPending);
+  document.getElementById('pending-count').textContent=pending.length+' รายการ';
+  document.getElementById('total-paid').textContent='฿'+fmt(tPaid);
+  document.getElementById('paid-count').textContent=paid.length+' รายการ';
+  document.getElementById('balance').textContent='฿'+fmt(Math.abs(balance));
+  document.getElementById('balance-badge').innerHTML=balance>=0?`<span class="badge badge-surplus">▲ เกิน ฿${fmt(balance)}</span>`:`<span class="badge badge-deficit">▼ ขาด ฿${fmt(Math.abs(balance))}</span>`;
 
-  document.getElementById('total-in').textContent      = '฿' + fmt(totalIn);
-  document.getElementById('income-count').textContent  = income.length + ' รายการ';
-  document.getElementById('total-out').textContent     = '฿' + fmt(totalOut);
-  document.getElementById('expense-count').textContent =
-    expenses.length + ' รายการ (กำหนดวันแล้ว: ' + expenses.filter(e => e.dateObj).length + ')';
-  document.getElementById('balance').textContent       = '฿' + fmt(Math.abs(balance));
+  renderMonthly(income,expenses);
 
-  const badge = document.getElementById('balance-badge');
-  badge.innerHTML = balance >= 0
-    ? `<span class="badge badge-surplus">▲ เกิน ฿${fmt(balance)}</span>`
-    : `<span class="badge badge-deficit">▼ ขาด ฿${fmt(Math.abs(balance))}</span>`;
-
-  renderMonthly(income, expenses);
-
-  const catTotals = {};
-  expenses.forEach(e => { catTotals[e.cat] = (catTotals[e.cat] || 0) + e.amount; });
-
-  const byDate = {};
-  expenses.filter(e => e.dateObj).forEach(e => {
-    byDate[e.date] = (byDate[e.date] || 0) + e.amount;
-  });
-
-  renderCatBars(catTotals, totalOut);
-  buildCharts(catTotals, byDate);
+  // Charts use PENDING only
+  const catTotals={};pending.forEach(e=>{catTotals[e.cat]=(catTotals[e.cat]||0)+e.amount;});
+  const byDate={};pending.filter(e=>e.dateObj).forEach(e=>{byDate[e.date]=(byDate[e.date]||0)+e.amount;});
+  renderCatBars(catTotals,tPending);
+  buildCharts(catTotals,byDate);
   buildFilters(expenses);
   renderTable(expenses);
 
-  document.getElementById('ts').textContent = 'อัปเดต ' +
-    new Date().toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' });
-
-  document.getElementById('loading').style.display   = 'none';
-  document.getElementById('error-box').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
+  document.getElementById('ts').textContent='อัปเดต '+new Date().toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
+  document.getElementById('loading').style.display='none';
+  document.getElementById('error-box').style.display='none';
+  document.getElementById('dashboard').style.display='block';
 }
 
-async function loadData() {
-  const loading = document.getElementById('loading');
-  const errBox  = document.getElementById('error-box');
-  const dash    = document.getElementById('dashboard');
-
-  loading.style.display = 'flex';
-  errBox.style.display  = 'none';
-
-  try {
-    const res = await fetch(CSV_URL());
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    const csv = await res.text();
-    const parsed = Papa.parse(csv, { skipEmptyLines: false });
-    const data = processData(parsed.data);
-    render(data);
-  } catch (err) {
-    console.error(err);
-    loading.style.display = 'none';
-    dash.style.display    = 'none';
-    errBox.style.display  = 'flex';
-    document.getElementById('error-msg').textContent = err.message || 'Unknown error';
+async function loadData(){
+  document.getElementById('loading').style.display='flex';
+  document.getElementById('error-box').style.display='none';
+  try{
+    const res=await fetch(CSV_URL());if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const csv=await res.text();const parsed=Papa.parse(csv,{skipEmptyLines:false});
+    render(processData(parsed.data));
+  }catch(err){
+    console.error(err);document.getElementById('loading').style.display='none';
+    document.getElementById('dashboard').style.display='none';document.getElementById('error-box').style.display='flex';
+    document.getElementById('error-msg').textContent=err.message;
   }
 }
-
-document.getElementById('btn-refresh').addEventListener('click', (e) => {
-  const svg = e.currentTarget.querySelector('svg');
-  svg.classList.add('rotating');
-  setTimeout(() => svg.classList.remove('rotating'), 600);
-  loadData();
-});
-
+document.getElementById('btn-refresh').addEventListener('click',e=>{const svg=e.currentTarget.querySelector('svg');svg.classList.add('rotating');setTimeout(()=>svg.classList.remove('rotating'),600);loadData();});
 loadData();
 </script>
 </body>
