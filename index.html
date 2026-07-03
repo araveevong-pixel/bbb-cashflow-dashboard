@@ -177,11 +177,20 @@ function mL(k){const[y,m]=k.split('-');return `${TM[parseInt(m)-1]} ${parseInt(y
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 function processForecast(rows){
-  // Row 0: A1=label B1=opening. Row 2 (idx2): headers. Data from idx3
+  // หา opening balance: หาช่องที่มีคำว่า "ตั้งต้น" แล้วอ่านตัวเลขในแถวเดียวกัน
   let opening=0;
-  if(rows[0]&&rows[0][1]){const o=pN(rows[0][1]);if(o!==null)opening=o;}
+  for(let i=0;i<Math.min(rows.length,5);i++){
+    const row=rows[i];if(!row)continue;
+    for(let j=0;j<row.length;j++){
+      if(String(row[j]).includes('ตั้งต้น')||String(row[j]).includes('Opening')){
+        for(let k=j+1;k<row.length;k++){const o=pN(row[k]);if(o!==null){opening=o;break;}}
+      }
+    }
+    if(opening>0)break;
+  }
+  // อ่านรายจ่าย: สแกนทุกแถวที่ A เป็นวันที่ + E เป็นตัวเลข
   const exp=[];
-  for(let i=3;i<rows.length;i++){
+  for(let i=0;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
     const d=pD(row[0]);const amt=pN(row[4]);
     if(d&&amt!==null&&amt>0){
@@ -192,7 +201,7 @@ function processForecast(rows){
 }
 function processIncome(rows){
   const inc=[];
-  for(let i=3;i<rows.length;i++){
+  for(let i=0;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
     const d=pD(row[0]);const amt=pN(row[2]);const desc=(row[1]||'').toString().trim();
     if(d&&amt!==null&&amt>0&&!desc.startsWith('ตัวอย่าง')){inc.push({date:d,label:desc,amount:amt});}
@@ -317,4 +326,3 @@ loadData();
 </script>
 </body>
 </html>
-
