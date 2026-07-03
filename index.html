@@ -177,24 +177,24 @@ function mL(k){const[y,m]=k.split('-');return `${TM[parseInt(m)-1]} ${parseInt(y
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 
 function processForecast(rows){
-  // หา opening balance: หาช่องที่มีคำว่า "ตั้งต้น" แล้วอ่านตัวเลขในแถวเดียวกัน
-  let opening=0;
-  for(let i=0;i<Math.min(rows.length,5);i++){
-    const row=rows[i];if(!row)continue;
-    for(let j=0;j<row.length;j++){
-      if(String(row[j]).includes('ตั้งต้น')||String(row[j]).includes('Opening')){
-        for(let k=j+1;k<row.length;k++){const o=pN(row[k]);if(o!==null){opening=o;break;}}
-      }
-    }
-    if(opening>0)break;
-  }
   // อ่านรายจ่าย: สแกนทุกแถวที่ A เป็นวันที่ + E เป็นตัวเลข
   const exp=[];
+  let firstDataRow=rows.length;
   for(let i=0;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
     const d=pD(row[0]);const amt=pN(row[4]);
     if(d&&amt!==null&&amt>0){
+      if(i<firstDataRow)firstDataRow=i;
       exp.push({date:d,name:(row[2]||'-').toString().trim(),project:(row[3]||'-').toString().trim(),amount:amt,cat:(row[5]||'อื่นๆ').toString().trim()});
+    }
+  }
+  // opening balance: หาตัวเลขที่ใหญ่ที่สุดในแถวก่อนแถวข้อมูลแรก (ส่วน header/config)
+  let opening=0;
+  for(let i=0;i<firstDataRow;i++){
+    const row=rows[i];if(!row)continue;
+    for(let j=0;j<row.length;j++){
+      const v=pN(row[j]);
+      if(v!==null&&v>opening)opening=v;
     }
   }
   return{opening,exp};
